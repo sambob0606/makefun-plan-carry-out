@@ -11,9 +11,9 @@ import sys
 
 PLAN = (
     "Day 1: buy a $20 AI seat + $10 domain. "
-    "Find indie hackers on X wanting a landing page; "
-    "sell a $49 one-page site in 24h via Stripe. "
-    "Days 2-7: deliver 2/day, post builds. "
+    "DM 20 indie hackers on X offering a $49 one-page site in 24h, "
+    "paid via Stripe. "
+    "Days 2-7: deliver 2/day, post each build. "
     "Days 8-30: raise to $99, add a $29/mo care plan, "
     "upsell every client. "
     "No ads before the first sale."
@@ -22,18 +22,29 @@ PLAN = (
 OUTPUT_PATH = "/output/entry.txt"
 
 
-def main() -> int:
-    text = PLAN
+def validate_plan(text: str) -> None:
+    """Guard: the entry must be a non-blank plan of 1-280 code points.
+
+    The bounty scores the file at /output/entry.txt, so fail loudly
+    before writing anything invalid instead of producing a bad entry.
+    """
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("plan must be non-blank text")
     if not 1 <= len(text) <= 280:
-        print(f"plan is {len(text)} code points, must be 1-280", file=sys.stderr)
-        return 1
-    if not text.strip():
-        print("plan is only whitespace", file=sys.stderr)
-        return 1
+        raise ValueError(f"plan is {len(text)} code points, must be 1-280")
+
+
+def main() -> int:
+    validate_plan(PLAN)
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
-        f.write(text)
-    print(f"wrote {len(text)} code points to {OUTPUT_PATH}")
+        f.write(PLAN)
+    # Read back and confirm the file is byte-identical to the plan.
+    with open(OUTPUT_PATH, "r", encoding="utf-8", newline="") as f:
+        if f.read() != PLAN:
+            print("written entry does not match PLAN", file=sys.stderr)
+            return 1
+    print(f"wrote {len(PLAN)} code points to {OUTPUT_PATH}")
     return 0
 
 
